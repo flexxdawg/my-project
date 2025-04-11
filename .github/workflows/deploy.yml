@@ -1,0 +1,42 @@
+name: Déploiement sur mon serveur  # Nom de ton workflow (visible sur GitHub)
+
+on:
+  push:
+    branches:
+      - main  # Ce workflow s'exécute uniquement quand tu pousses sur la branche "main"
+
+jobs:
+  deploy:  # Nom du job (tu peux l’appeler comme tu veux)
+
+    runs-on: ubuntu-latest  # GitHub va utiliser une machine virtuelle Ubuntu pour exécuter le job
+
+    steps:  # Liste des étapes à suivre pour ce job
+
+      - name: Cloner le repo  # 1ère étape : on récupère les fichiers de ton dépôt GitHub
+        uses: actions/checkout@v3
+
+      - name: Connexion à Docker Hub  # 2ème étape : on se connecte à Docker Hub avec tes identifiants
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+
+      - name: Build de l'image  # 3ème étape : on construit l’image Docker à partir de ton Dockerfile
+        run: docker build -t flexxdawg/test-cicd-1 .
+
+        # Le ".": ça veut dire qu’on build l’image à partir du dossier actuel
+        # "monpseudo/mon-site:latest" = nom de l'image + tag
+
+      - name: Push de l'image  # 4ème étape : on envoie cette image sur ton compte Docker Hub
+        run: docker push flexxdawg/test-cicd-1
+
+      - name: Connexion SSH au serveur & déploiement  # 5ème étape : on se connecte à ton serveur pour mettre à jour ton conteneur
+        uses: appleboy/ssh-action@v1.0.0  # Action GitHub pour exécuter des commandes SSH
+
+        with:
+          host: ${{ secrets.SSH_HOST }}       # Adresse IP ou nom de domaine de ton serveur
+          username: ${{ secrets.SSH_USER }}   # Nom d’utilisateur pour la connexion (souvent root ou un autre)
+          key: ${{ secrets.SSH_KEY }}         # Clé privée SSH pour se connecter (jamais un mot de passe !)
+
+          script: |  # Voici les commandes qui vont s’exécuter sur TON serveur, à distance !
+            docker pull flexxdawg/test-cicd-1       
+            docker stop test-cicd-1 || true               
+            docker rm test-cicd-1 || true                  
+            docker run -d --name mon-site -p 80:80 flexxdawg/test-cicd-1  
