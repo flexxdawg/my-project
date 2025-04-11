@@ -18,7 +18,7 @@ jobs:
       - name: Préparer accès SSH à GitHub (si besoin de push ou de sous-modules privés) 
         run: |
           mkdir -p ~/.ssh                                      
-          echo "${{ secrets.GH_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa  
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa  
           chmod 600 ~/.ssh/id_rsa                             
           ssh-keyscan github.com >> ~/.ssh/known_hosts        
 
