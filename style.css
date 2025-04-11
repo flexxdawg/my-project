@@ -1,30 +1,19 @@
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: blue;
-    color: #333;
-}
-
-header {
-    background-color: #4CAF50;
-    color: white;
-    padding: 1em 0;
-    text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #1e1e2f; /* fond sombre */
+  color: #ffffff; /* texte blanc */
+  text-align: center;
+  margin: 0;
+  padding: 50px;
 }
 
 h1 {
-    margin: 0;
+  color: #ffcc00; /* jaune flashy pour le titre */
+  font-size: 3em;
+  margin-bottom: 20px;
 }
 
-footer {
-    background-color: #333;
-    color: white;
-    padding: 1em 0;
-    text-align: center;
-}
-
-main {
-    padding: 2em;
-    text-align: center;
+p {
+  font-size: 1.2em;
+  color: #dddddd;
 }
