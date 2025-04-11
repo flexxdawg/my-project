@@ -1,40 +1,36 @@
-name: Déploiement sur mon serveur  # Nom du workflow (visible sur GitHub)
+name: Déploiement sur mon serveur
 
 on:
   push:
     branches:
-      - main  # Ce workflow se lance uniquement quand tu pousses sur la branche "main"
+      - main
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest  # GitHub va utiliser une machine virtuelle Ubuntu
+    runs-on: ubuntu-latest
 
     steps:
       - name: Cloner le dépôt GitHub
-        uses: actions/checkout@v4  # On récupère ton code source
+        uses: actions/checkout@v4
 
       - name: Connexion à Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-        # On se connecte à ton compte Docker Hub pour pouvoir push l'image
 
       - name: Construction de l'image Docker
         run: docker build -t flexxdawg/test-cicd-1 .
-        # On construit l'image depuis le Dockerfile du projet
 
       - name: Push de l'image Docker sur Docker Hub
         run: docker push flexxdawg/test-cicd-1
-        # L'image construite est envoyée sur ton Docker Hub
 
-      - name: Démarrage de l'agent SSH avec ta clé privée
-        uses: webfactory/ssh-agent@v0.9.0
+      - name: Déploiement via SSH avec mot de passe
+        uses: appleboy/ssh-action@v1.0.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-        # On utilise un agent SSH pour se connecter proprement à ton serveur
-
-      - name: Connexion au serveur et déploiement
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-            docker pull flexxdawg/test-cicd-1       
-            docker stop test-cicd-1 || true         
-            docker rm test-cicd-1 || true           
-            docker run -d --name test-cicd-1 -p 80:80 flexxdawg/test-cicd-1  
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_KEY }}
+          port: 22
+          script: |
+            docker pull flexxdawg/test-cicd-1
+            docker stop test-cicd-1 || true
+            docker rm test-cicd-1 || true
+            docker run -d --name test-cicd-1 -p 80:80 flexxdawg/test-cicd-1
